@@ -1,0 +1,88 @@
+# apiVersion : le Deployment appartient au groupe "apps".
+apiVersion: apps/v1
+
+# kind : gère un ensemble de pods identiques et les recrée s'ils disparaissent.
+kind: Deployment
+
+metadata:
+  name: backend
+  namespace: bijouterie
+  labels:
+    app: bijouterie
+    tier: backend
+
+spec:
+  # replicas : 2 pods pour la haute disponibilité. Le backend ne garde aucun
+  # fichier sur son disque (les photos sont en base), on peut donc le répliquer.
+  replicas: 2
+
+  # selector : labels qui identifient les pods gérés par ce Deployment.
+  # Ils doivent être identiques à ceux de template.metadata.labels.
+  selector:
+    matchLabels:
+      app: bijouterie
+      tier: backend
+
+  # template : modèle utilisé pour créer chaque pod.
+  template:
+    metadata:
+      labels:
+        app: bijouterie
+        tier: backend
+    spec:
+      containers:
+      - name: backend
+        # image : tag explicite (jamais "latest"), remplacé plus tard par le
+        # numéro de build Jenkins.
+        image: mamoudoubarry/bijouterie-backend:1
+        ports:
+        - containerPort: 3000
+
+        # envFrom : importe TOUTES les clés de la ConfigMap comme variables
+        # d'environnement (PORT, DB_HOST, DB_PORT, DB_NAME, SHOP_NAME...).
+        envFrom:
+        - configMapRef:
+            name: backend-config
+
+        # env + valueFrom : importe UNE clé précise d'un Secret et permet de
+        # choisir le nom de la variable. Ici, on ne prend que les deux
+        # identifiants de backend-secret.
+        env:
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: backend-secret
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: backend-secret
+              key: DB_PASSWORD
+
+        # livenessProbe : si /api/health ne répond plus, Kubernetes redémarre
+        # le conteneur (le processus Node.js est bloqué ou planté).
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+
+        # readinessProbe : tant que /api/ready répond 503 (MySQL injoignable),
+        # le pod ne reçoit aucun trafic du Service.
+        readinessProbe:
+          httpGet:
+            path: /api/ready
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+        # resources : requests = minimum réservé pour placer le pod,
+        # limits = plafond que le conteneur ne doit pas dépasser.
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi

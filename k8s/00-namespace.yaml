@@ -1,0 +1,23 @@
+# apiVersion : groupe d'API + version de la ressource.
+# Le Namespace fait partie du groupe "core" (le groupe historique de Kubernetes),
+# qui s'écrit simplement "v1", contrairement au Deployment qui est "apps/v1"
+apiVersion: v1
+
+# kind : type de ressource à créer. Ici un Namespace, c'est-à-dire un espace
+# isolé dans le cluster qui regroupe toutes les ressources du projet.
+kind: Namespace
+# metadata : l'identité de la ressource.
+metadata:
+# name : nom du namespace. Il sera repris dans "metadata.namespace: bijouterie"
+# de tous les autres manifests (Deployments, Services, ConfigMaps, Secrets)
+  name: bijouterie
+  # labels : étiquettes clé/valeur, imposées par le § 4.7 de l'énoncé.
+  # "app: bijouterie" identifie le projet. On le retrouvera sur toutes les
+  # ressources et il servira dans les selectors des Services et Deployments.
+  labels:
+    app: bijouterie
+  
+  # Pas de bloc "spec" : un Namespace est un simple conteneur logique,
+  # il n'a rien à configurer en plus.
+
+  

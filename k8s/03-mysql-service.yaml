@@ -1,0 +1,40 @@
+# apiVersion : un Service fait partie du groupe "core", donc "v1"
+# (comme le Namespace et le Secret, contrairement au Deployment qui est "apps/v1").
+apiVersion: v1
+
+# kind : type de ressource. Un Service donne une adresse stable (IP + nom DNS)
+# à un ensemble de pods, dont l'IP change à chaque recréation.
+kind: Service
+
+metadata:
+  # name : nom du Service. C'est aussi son nom DNS dans le cluster :
+  # le backend joindra la base avec DB_HOST = "mysql".
+  name: mysql
+  # namespace : même namespace que le reste de l'application.
+  namespace: bijouterie
+  # labels : imposés par le § 4.7 (app = projet, tier = couche de l'architecture).
+  labels:
+    app: bijouterie
+    tier: database
+
+spec:
+  # type : ClusterIP = accessible uniquement depuis l'intérieur du cluster.
+  # Exigé pour la base de données, qui ne doit pas être joignable de l'extérieur
+  # (on n'utilise donc pas NodePort).
+  type: ClusterIP
+
+  # selector : désigne les pods vers lesquels envoyer le trafic.
+  # Ces labels doivent être identiques à ceux de spec.template.metadata.labels
+  # du Deployment mysql. Sinon le Service n'a aucun pod derrière lui
+  # (on le vérifie avec "kubectl get endpoints").
+  selector:
+    app: bijouterie
+    tier: database
+
+  ports:
+  - protocol: TCP
+    # port : port sur lequel le Service écoute (celui que le backend utilise).
+    port: 3306
+    # targetPort : port du conteneur vers lequel le trafic est redirigé
+    # (le containerPort du Deployment mysql).
+    targetPort: 3306
