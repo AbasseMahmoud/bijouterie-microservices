@@ -1,0 +1,29 @@
+#apiVersion: un service fait partie du groupe "core", donc "v1"
+apiVersion: v1
+#kind : donne une adresse stable (IP + nom DNS) à un ensemble de pods, dont l'IP change à chaque recréation.
+kind: Service
+metadata:
+#name: nom DNS interne. le frontend joindra le backend avec BACKEND_HOST = "backend".
+#(http://localhost:3000)
+  name: backend
+  namespace: bijouterie
+  labels:
+    app: bijouterie
+    tier: backend
+spec:
+#type : ClusterIP = accessible uniquement depuis l'intérieur du cluster.
+#Exigé pour le backend, qui ne doit pas être joignable de l'extérieur
+  type: ClusterIP
+#selector : désigne les pods vers lesquels envoyer le trafic.
+#Ces labels doivent être identiques à ceux de spec.template.metadata.labels
+#du Deployment backend. Sinon le Service n'a aucun pod derrière lui
+  selector:
+    app: bijouterie
+    tier: backend
+  ports:
+  - protocol: TCP
+    #port : port sur lequel le Service écoute (celui que le frontend utilise).
+    port: 3000
+    #targetPort : port du conteneur vers lequel le trafic est redirigé
+    #(le containerPort du Deployment backend).
+    targetPort: 3000
