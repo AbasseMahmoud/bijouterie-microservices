@@ -1,0 +1,75 @@
+# apiVersion : le Deployment appartient au groupe "apps" (pas "v1" tout seul,
+# réservé aux ressources du groupe "core" comme Service ou ConfigMap).
+apiVersion: apps/v1
+
+# kind : gère un ensemble de pods identiques et les recrée s'ils disparaissent.
+# Attention à la casse : "Deployment" avec un D majuscule.
+kind: Deployment
+
+metadata:
+  name: frontend
+  namespace: bijouterie
+  labels:
+    app: bijouterie
+    tier: frontend
+
+spec:
+  # replicas : 2 pods Nginx, pour la disponibilité et la répartition de charge.
+  replicas: 2
+
+  # selector : labels qui identifient les pods gérés par ce Deployment.
+  # Ils doivent être identiques à ceux de template.metadata.labels.
+  selector:
+    matchLabels:
+      app: bijouterie
+      tier: frontend
+
+  # template : modèle utilisé pour créer chaque pod.
+  template:
+    metadata:
+      labels:
+        app: bijouterie
+        tier: frontend
+    spec:
+      containers:
+      - name: frontend
+        # image : tag explicite (jamais "latest"), remplacé plus tard par le
+        # numéro de build Jenkins.
+        image: mamoudoubarry/bijouterie-frontend:1
+        ports:
+        # Nginx écoute sur le port 80 dans le conteneur.
+        - containerPort: 80
+
+        # envFrom : importe toutes les clés de frontend-config
+        # (BACKEND_URL, MAX_UPLOAD_SIZE). Le conteneur les utilise au démarrage
+        # pour générer sa configuration Nginx à partir du template.
+        envFrom:
+        - configMapRef:
+            name: frontend-config
+
+        # livenessProbe : si /healthz ne répond plus, Kubernetes redémarre
+        # le conteneur Nginx.
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+
+        # readinessProbe : le pod ne reçoit du trafic qu'une fois Nginx prêt.
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 80
+          initialDelaySeconds: 3
+          periodSeconds: 5
+
+        # resources : requests = minimum réservé pour placer le pod,
+        # limits = plafond que le conteneur ne doit pas dépasser.
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
