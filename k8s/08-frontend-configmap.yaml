@@ -1,0 +1,22 @@
+#apiversion: une ConfigMap fait partie du groupe "core", donc "v1"
+
+apiVersion: v1
+
+#kind: stocke de la configuration NON sensible (clé/valeur). Les valeurs sensibles (identifiants) sont dans frontend-secret
+kind: ConfigMap
+
+metadata:
+  #name: nom imposé par l'énoncé, repris dans le Deployment du frontend
+  name: frontend-config
+  namespace: bijouterie
+  labels:
+    app: bijouterie
+    tier: frontend
+#data: les paires clé/valeur. Toutes les valeurs doivent être des chaînes de caractères : les nombres sont donc entre guillemets ("3000"), sinon kubectl apply refuse le fichier.
+data:
+  #Nom du Service backend : le DNS interne du cluster le traduit en IP.
+  BACKEND_URL: "http://backend:3000"
+  # Taille maximale d'un envoi acceptée par Nginx. Elle doit être un peu plus
+  # grande que MAX_FILE_SIZE_MB du backend (5 Mo), sinon Nginx refuserait
+  # la photo avant que le backend ne la voie.
+  MAX_UPLOAD_SIZE: "6m"
