@@ -20,7 +20,7 @@ cp .env.example .env          # facultatif
 docker compose up --build
 ```
 
-Puis ouvrir <http://localhost:8080>.
+Puis ouvrir <http://localhost:8081>.
 
 Arrêter : `docker compose down` (ajouter `-v` pour effacer aussi les données MySQL).
 
