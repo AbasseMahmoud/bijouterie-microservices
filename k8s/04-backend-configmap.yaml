@@ -27,7 +27,7 @@ data:
   # Nom de la base : DOIT être identique à MYSQL_DATABASE de mysql-secret.
   DB_NAME: "db_bijouterie"
   # Nom de ta boutique (affiché en en-tête du site).
-  SHOP_NAME: "Bijouterie — Bijoux en or"
+  SHOP_NAME: "Bijouterie de Mahmoud"
   # Devise affichée pour les prix.
   CURRENCY: "FCFA"
   # Taille maximale d'une photo, en Mo.
