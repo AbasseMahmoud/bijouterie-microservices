@@ -15,7 +15,7 @@ metadata:
 
 spec:
   # replicas : 2 pods Nginx, pour la disponibilité et la répartition de charge.
-  replicas: 2
+  replicas: 3
 
   # selector : labels qui identifient les pods gérés par ce Deployment.
   # Ils doivent être identiques à ceux de template.metadata.labels.
