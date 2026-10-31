@@ -1,0 +1,41 @@
+# apiVersion : les Applications Argo CD sont une ressource personnalisée (CRD),
+# installée avec Argo CD, du groupe "argoproj.io".
+apiVersion: argoproj.io/v1alpha1
+
+# kind : une Application décrit QUOI déployer (source Git) et OÙ (cluster, namespace).
+kind: Application
+
+metadata:
+  # name : nom imposé par l'énoncé.
+  name: bijouterie
+  # namespace : les Applications vivent dans le namespace d'Argo CD, pas dans bijouterie.
+  namespace: argocd
+
+spec:
+  # project : "default" est le projet fourni avec Argo CD.
+  project: default
+
+  # source : le dépôt Git surveillé par Argo CD.
+  source:
+    repoURL: https://github.com/AbasseMahmoud/bijouterie-microservices.git
+    # targetRevision : branche principale.
+    targetRevision: main
+    # path : dossier qui contient les manifests.
+    path: k8s
+
+  # destination : le cluster et le namespace où déployer.
+  destination:
+    # kubernetes.default.svc = le cluster dans lequel Argo CD tourne.
+    server: https://kubernetes.default.svc
+    namespace: bijouterie
+
+  syncPolicy:
+    # automated : Argo CD synchronise tout seul dès que Git change.
+    automated:
+      # prune : supprime du cluster les ressources retirées de Git.
+      prune: true
+      # selfHeal : remet l'état de Git si quelqu'un modifie le cluster à la main.
+      selfHeal: true
+    syncOptions:
+      # CreateNamespace : crée le namespace de destination s'il n'existe pas.
+      - CreateNamespace=true
